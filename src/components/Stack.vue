@@ -10,8 +10,6 @@ if (props.expression === null) {
     throw new Error("expression is null");
 
 }
-console.log(props.expression);
-
 </script>
 
 <template>

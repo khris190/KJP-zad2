@@ -41,12 +41,20 @@ export class Expression implements ExpressionInterface {
             if (type !== null) {
                 switch (type) {
                     case Type.Prefix:
-                        if (this.type === Type.Infix) {
-
+                        if (this.type === Type.Postfix) {
+                            this.message = this.postToPre(this.message);
+                            this.type = Type.Prefix;
                         }
+
                         break;
                     case Type.Infix:
-                        this.isInfix(input)
+                        if (this.type === Type.Prefix) {
+                            this.message = this.preToIn(this.message);
+                            this.type = Type.Infix;
+                        } else if (this.type === Type.Postfix) {
+                            this.message = this.preToIn(this.postToPre(this.message));
+                            this.type = Type.Infix;
+                        }
                         break;
                     case Type.Postfix:
                         if (this.type === Type.Prefix) {
@@ -71,7 +79,6 @@ export class Expression implements ExpressionInterface {
         const goodRatio = (signsReg !== null
             && letterReg !== null
             && letterReg.length - 1 === signsReg.length);
-        console.log(checkSigns, goodRatio);
 
         return checkSigns && goodRatio
     }
@@ -151,7 +158,6 @@ export class Expression implements ExpressionInterface {
         }
         return false;
     }
-
     protected preToPost(pre_exp: string): string {
 
         let s: Array<string> = [];
@@ -187,12 +193,78 @@ export class Expression implements ExpressionInterface {
         // stack contains only the Postfix expression
         return s[s.length - 1];
     }
+    protected postToPre(post_exp: string): string {
+        let s: Array<string> = [];
+
+        // length of expression
+        let length = post_exp.length;
+
+        // reading from right to left
+        for (let i = 0; i < length; i++) {
+
+            // check if symbol is operator
+            if (post_exp[i].match(operationsRegex)) {
+
+                // Pop two operands from stack
+                let op1 = s[s.length - 1];
+                s.pop();
+                let op2 = s[s.length - 1];
+                s.pop();
+
+                // concat the operands and operator
+                let temp = post_exp[i] + op2 + op1;
+
+                // Push String temp back to stack
+                s.push(temp);
+            }
+
+            // if symbol is an operand
+            else {
+
+                // Push the operand to the stack
+                s.push(post_exp[i] + "");
+            }
+        }
+
+        let ans = "";
+        while (s.length > 0)
+            ans += s.pop();
+        return ans;
+    }
+
+    protected preToIn(pre_exp: string): string {
+        let stack: Array<string> = [];
+
+        // Length of expression
+        let l = pre_exp.length;
+
+        // Reading from right to left
+        for (let i = l - 1; i >= 0; i--) {
+            let c = pre_exp[i];
+
+            if (c.match(operationsRegex)) {
+                let op1 = stack[stack.length - 1];
+                stack.pop()
+                let op2 = stack[stack.length - 1];
+                stack.pop()
+
+                // Concat the operands and operator
+                let temp = "(" + op1 + c + op2 + ")";
+                stack.push(temp);
+            }
+            else {
+
+                // To make character to string
+                stack.push(c + "");
+            }
+        }
+        return stack[stack.length - 1];
+    }
 
     protected getStack(input: string): Array<string> {
         return input.split('');
     }
 }
-
 export class ExpressionHandler implements ExpressionHandlerInterface {
     input: ExpressionInterface;
     prefix: ExpressionInterface;

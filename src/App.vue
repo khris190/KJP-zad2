@@ -22,11 +22,11 @@ const onInput = (char: string, full: string, stackH: ExpressionHandler) => {
       <ConvertFiled :msg="stack.infix.message" title="Infix" />
       <ConvertFiled :msg="stack.postfix.message" title="Postfix" />
     </div>
-    <div class="container">
+    <!-- <div class="container">
       <Stack v-if="stack.prefix.type !== Type.None" :expression="stack.prefix" />
       <Stack v-if="stack.infix.type !== Type.None" :expression="stack.infix" />
       <Stack v-if="stack.postfix.type !== Type.None" :expression="stack.postfix" />
-    </div>
+    </div> -->
   </div>
 </template>
 
