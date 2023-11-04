@@ -2,11 +2,13 @@
 
 const props = defineProps<{
     msg: string
+    title: string
 }>()
 
 </script>
 
 <template>
+    <p>{{ title }}</p>
     <input :disabled="true" placeholder="<empty>" :value="msg">
 </template>
 
