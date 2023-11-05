@@ -2,7 +2,7 @@
 import { ExpressionHandler, Type } from '@ts/ExpressionHandler';
 import { ref } from 'vue';
 
-let input: string = 'a+b';
+let input: string;
 let error = ref(true);
 
 const emit = defineEmits(['inputEvent'])

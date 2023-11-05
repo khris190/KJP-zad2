@@ -44,8 +44,10 @@ export class Expression implements ExpressionInterface {
                         if (this.type === Type.Postfix) {
                             this.message = this.postToPre(this.message);
                             this.type = Type.Prefix;
+                        } else if (this.type === Type.Infix) {
+                            this.message = this.postToPre(this.inToPost(this.message));
+                            this.type = Type.Prefix;
                         }
-
                         break;
                     case Type.Infix:
                         if (this.type === Type.Prefix) {
@@ -60,6 +62,9 @@ export class Expression implements ExpressionInterface {
                         if (this.type === Type.Prefix) {
                             this.message = this.preToPost(this.message);
                             this.type = Type.Postfix;
+                        } else if (this.type === Type.Infix) {
+                            this.message = this.inToPost(this.message);
+                            this.type = Type.Infix;
                         }
                         break;
                     default:
@@ -231,7 +236,6 @@ export class Expression implements ExpressionInterface {
             ans += s.pop();
         return ans;
     }
-
     protected preToIn(pre_exp: string): string {
         let stack: Array<string> = [];
 
@@ -259,6 +263,50 @@ export class Expression implements ExpressionInterface {
             }
         }
         return stack[stack.length - 1];
+    }
+    //Function to return precedence of operators
+    protected prec(c: string) {
+        if (c == '^')
+            return 3;
+        else if (c == '/' || c == '*')
+            return 2;
+        else if (c == '+' || c == '-')
+            return 1;
+        else
+            return -1;
+    }
+
+    protected inToPost(in_exp: string): string {
+
+        let st = [];
+        let result = "";
+
+        for (const element of in_exp) {
+            let c = element;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+                result += c;
+            else if (c == '(')
+                st.push('(');
+            else if (c == ')') {
+                while (st[st.length - 1] != '(') {
+                    result += st[st.length - 1];
+                    st.pop();
+                }
+                st.pop();
+            }
+            else {
+                while (st.length != 0 && this.prec(element) <= this.prec(st[st.length - 1])) {
+                    result += st[st.length - 1];
+                    st.pop();
+                }
+                st.push(c);
+            }
+        }
+        while (st.length != 0) {
+            result += st[st.length - 1];
+            st.pop();
+        }
+        return result;
     }
 
     protected getStack(input: string): Array<string> {
