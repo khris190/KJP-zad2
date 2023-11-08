@@ -318,13 +318,15 @@ export class ExpressionV2 implements ExpressionInterface {
         const revStack = this.stack.slice().reverse();
         for (const piece of revStack) {
             if (piece instanceof ExpressionOperator) {
-                const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
-                const op2 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
-                console.log(op1.value);
-                console.log(op2.value);
-                console.log(piece.value);
+                if (piece.expects === 1) {
+                    const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    tmpStack.push(new ExpressionOperand('(' + piece.value + op1.value + ')'))
+                } else if (piece.expects === 2) {
+                    const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    const op2 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    tmpStack.push(new ExpressionOperand('(' + op1.value + piece.value + op2.value + ')'))
+                }
 
-                tmpStack.push(new ExpressionOperand('(' + op1.value + piece.value + op2.value + ')'))
             }
             else {
                 tmpStack.push(piece);
@@ -343,13 +345,14 @@ export class ExpressionV2 implements ExpressionInterface {
                 tmpStack.push(piece);
             }
             else {
-                const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
-                const op2 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
-                console.log(op1.value);
-                console.log(op2.value);
-                console.log(piece.value);
-
-                tmpStack.push(new ExpressionOperand('(' + op2.value + piece.value + op1.value + ')'))
+                if (piece.expects === 1) {
+                    const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    tmpStack.push(new ExpressionOperand('(' + piece.value + op1.value + ')'))
+                } else if (piece.expects === 2) {
+                    const op1 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    const op2 = tmpStack.pop() as ExpressionOperand | ExpressionOperator
+                    tmpStack.push(new ExpressionOperand('(' + op2.value + piece.value + op1.value + ')'))
+                }
             }
         }
 
