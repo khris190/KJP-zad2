@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ExpressionHandler, Type } from '@ts/ExpressionHandler';
+import { ExpressionV2, Type } from "../ts/ExpressionHandlerV2";
 import { ref } from 'vue';
 
 let input: string;
@@ -10,12 +10,12 @@ const emit = defineEmits(['inputEvent'])
 
 const onChange = (event: Event) => {
     const payload = event as InputEvent;
-    let expression = new ExpressionHandler(input);
-    error.value = expression.input.type !== Type.None;
+    let expression = new ExpressionV2(input);
+    error.value = expression.type !== Type.None;
     let inElement = payload.target as HTMLInputElement;
     if (error.value) {
         inElement.classList.remove('error');
-        emit('inputEvent', payload.data, input, expression);
+        emit('inputEvent', payload.data, input);
     } else {
         inElement.classList.add('error');
     }

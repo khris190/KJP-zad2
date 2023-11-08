@@ -1,5 +1,3 @@
-import type Converters from "@/ts/Converters"
-
 class ExpressionOperand {
     public value: string
     constructor(value: string) {
@@ -21,6 +19,12 @@ export enum Type {
     None = 'None'
 }
 
+export interface ExpressionInterface {
+    stack: Array<ExpressionOperand | ExpressionOperator> | false;
+    type: Type;
+    message: string;
+}
+
 const isExpressionRegex = /^((?:(?:NEG)|(?:tg)|(?:tcg)|(?:sin)|(?:cos)|(?:\^)|[0-9a-zA-Z+\-/*()]){2,})$/
 const expressionCaptureRegex = /((?:NEG)|(?:tg)|(?:tcg)|(?:sin)|(?:cos)|(?:\^))|(\((?:\d+|[a-zA-Z])\))|([0-9]+|[a-zA-Z])|([+\-/*()])/g
 const valueNeedsBracketsRegex = /^(\(\d+)\)$/
@@ -28,47 +32,64 @@ const operator0Regex = /^([()])$/
 const operator1Regex = /(NEG)|(tg)|(tcg)|(sin)|(cos)/
 const operator2Regex = /(\^)|([+\-/*])/
 const variableRegex = /^((?:\((?:\d+|[a-zA-Z])\))|(?:\d+|[a-zA-Z]))$/
-export class TestExpresson {
+export class ExpressionV2 implements ExpressionInterface {
     stack: Array<ExpressionOperand | ExpressionOperator> = [];
     type: Type = Type.None;
+    message: string;
     constructor(input: string, convertTo: Type = Type.None) {
+        this.message = input;
         this.populateStack(input);
         this.type = this.checkType();
-        console.log(input.match(expressionCaptureRegex))
-        console.log(this.type);
-        console.log('validate', this.validate());
+        if (!this.validate()) {
+            this.type = Type.None;
+            return;
+        }
         if (convertTo !== Type.None) {
+            let res: boolean = true;
             switch (convertTo) {
                 case Type.Prefix:
                     if (this.type === Type.Infix) {
-                        this.InToPre();
+                        res = this.InToPre();
                     } else if (this.type === Type.Postfix) {
-                        this.PostToPre();
+                        res = this.PostToPre();
                     }
                     break;
                 case Type.Infix:
                     if (this.type === Type.Prefix) {
-                        this.PreToIn();
+                        res = this.PreToIn();
                     } else if (this.type === Type.Postfix) {
-                        this.PostToIn();
+                        res = this.PostToIn();
                     }
                     break;
                 case Type.Postfix:
                     if (this.type === Type.Prefix) {
-                        this.preToPost();
+                        res = this.preToPost();
                     } else if (this.type === Type.Infix) {
-                        this.InToPost();
+                        res = this.InToPost();
                     }
                     break;
                 default:
                     throw new Error("wtf is that type");
             }
-            console.log(this.stack);
-
+            if (res) {
+                this.type = convertTo
+                this.message = this.getMessage();
+                console.log(convertTo + " convert okay")
+            } else {
+                this.type = Type.None;
+                console.log('convert to ' + convertTo + ' error');
+            }
         }
     }
+    private getMessage() {
+        let res: string = '';
+        for (const piece of this.stack) {
+            res += piece.value;
+        }
+        return res;
+    }
     private getPrecedence(operation: string): number {
-        if (operation.match(/(NEG)|(tg)|(tcg)|(sin)|(cos)/)) {
+        if (operation.match(/(NEG)|(tg)|(tcg)|(sin)|(cos)|(\^)/)) {
             return 3
         } else if (operation.match(/[*/]/)) {
             return 2

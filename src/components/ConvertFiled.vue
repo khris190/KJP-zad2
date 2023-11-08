@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { type ExpressionInterface, Type } from "../ts/ExpressionHandlerV2";
 
 const props = defineProps<{
-    msg: string
+    expression: ExpressionInterface
     title: string
 }>()
 
@@ -9,7 +10,7 @@ const props = defineProps<{
 
 <template>
     <p>{{ title }}</p>
-    <input :disabled="true" placeholder="<empty>" :value="msg">
+    <input :disabled="true" placeholder="<empty>" v-if="expression.type !== Type.None" :value="expression.message">
 </template>
 
 <style scoped>
