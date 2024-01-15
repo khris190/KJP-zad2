@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { ExpressionV2, Type } from "../ts/ExpressionHandlerV2";
 import { ref } from 'vue';
-
 let input: string;
 let error = ref(true);
-
 const emit = defineEmits(['inputEvent'])
-
-
 const onChange = (event: Event) => {
     const payload = event as InputEvent;
     let expression = new ExpressionV2(input);
@@ -20,9 +16,7 @@ const onChange = (event: Event) => {
         inElement.classList.add('error');
     }
 }
-
 </script>
-
 <template>
     <div class="inputField">
         <input v-model="input" placeholder="input" @input="onChange">

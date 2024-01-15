@@ -32,11 +32,15 @@ const operator0Regex = /^([()])$/
 const operator1Regex = /(NEG)|(tg)|(tcg)|(sin)|(cos)/
 const operator2Regex = /(\^)|([+\-/*])/
 const variableRegex = /^((?:\((?:\d+|[a-zA-Z])\))|(?:\d+|[a-zA-Z]))$/
+const lastNumberRegex = /\d$/
 export class ExpressionV2 implements ExpressionInterface {
     stack: Array<ExpressionOperand | ExpressionOperator> = [];
     type: Type = Type.None;
     message: string;
     constructor(input: string, convertTo: Type = Type.None) {
+        if (convertTo === Type.Prefix) {
+            console.log(input)
+        }
         this.message = input;
         this.populateStack(input);
         this.type = this.checkType();
@@ -74,16 +78,19 @@ export class ExpressionV2 implements ExpressionInterface {
             if (res) {
                 this.type = convertTo
                 this.message = this.getMessage();
-                console.log(convertTo + " convert okay")
             } else {
                 this.type = Type.None;
-                console.log('convert to ' + convertTo + ' error');
             }
         }
     }
     private getMessage() {
         let res: string = '';
+        let lastPieceOperand = false;
         for (const piece of this.stack) {
+            if (piece instanceof ExpressionOperand && lastPieceOperand) {
+                res += ' ';
+            }
+            lastPieceOperand = (piece instanceof ExpressionOperand);
             res += piece.value;
         }
         return res;
@@ -124,6 +131,7 @@ export class ExpressionV2 implements ExpressionInterface {
                 throw new Error("JAK TO SIĘ STAŁO? HMMM? NIE POTRAFISZ REGEXA?");
             }
         });
+
         return true;
     }
     private checkType(): Type {
@@ -245,7 +253,7 @@ export class ExpressionV2 implements ExpressionInterface {
                 } else if (piece.expects === 2) {
                     const op1 = resStack.pop() as ExpressionOperand | ExpressionOperator
                     const op2 = resStack.pop() as ExpressionOperand | ExpressionOperator
-                    resStack.push(new ExpressionOperand(op1.value + op2.value + piece.value))
+                    resStack.push(new ExpressionOperand(op1.value + ' ' + op2.value + piece.value))
                 }
             }
         }
@@ -254,6 +262,8 @@ export class ExpressionV2 implements ExpressionInterface {
     }
     private PostToPre(): boolean {
         let resStack: Array<ExpressionOperand | ExpressionOperator> = [];
+        console.log(this.stack)
+
         for (const piece of this.stack) {
             if (piece instanceof ExpressionOperand) {
                 resStack.push(piece);
@@ -264,7 +274,7 @@ export class ExpressionV2 implements ExpressionInterface {
                 } else if (piece.expects === 2) {
                     const op1 = resStack.pop() as ExpressionOperand | ExpressionOperator
                     const op2 = resStack.pop() as ExpressionOperand | ExpressionOperator
-                    resStack.push(new ExpressionOperand(piece.value + op2.value + op1.value))
+                    resStack.push(new ExpressionOperand(piece.value + op2.value + ' ' + op1.value))
                 }
             }
         }
@@ -274,8 +284,14 @@ export class ExpressionV2 implements ExpressionInterface {
     private InToPost(): boolean {
         let res: string = '';
         let tmpStack: Array<ExpressionOperand | ExpressionOperator> = [];
+        console.log(this.stack)
+        let lastPieceOperand = false;
         for (const piece of this.stack) {
             if (piece instanceof ExpressionOperand) {
+                if (lastPieceOperand) {
+                    res += ' ';
+                }
+                lastPieceOperand = (piece instanceof ExpressionOperand);
                 res += piece.value;
             } else if (piece instanceof ExpressionOperator) {
                 if (piece.value === '(') {
@@ -287,6 +303,7 @@ export class ExpressionV2 implements ExpressionInterface {
                     tmpStack.pop();
                 } else {
                     while (tmpStack.length != 0 && this.getPrecedence(piece.value) < this.getPrecedence(tmpStack[tmpStack.length - 1].value)) {
+                        lastPieceOperand = (piece instanceof ExpressionOperand);
                         res += tmpStack.pop()?.value;
                     }
                     tmpStack.push(piece)
@@ -296,6 +313,7 @@ export class ExpressionV2 implements ExpressionInterface {
         while (tmpStack.length != 0) {
             res += tmpStack.pop()?.value;
         }
+        console.log(res)
         this.populateStack(res);
         return this.validatePostfix();
     }
@@ -355,7 +373,6 @@ export class ExpressionV2 implements ExpressionInterface {
                 }
             }
         }
-
         this.populateStack(tmpStack.pop()?.value as string);
         return this.validateInfix();
 

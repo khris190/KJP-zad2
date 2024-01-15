@@ -9,7 +9,6 @@ let stack = ref<ExpressionHandlerInterface>(new ExpressionHandler(''))
 const onInput = (char: string, full: string) => {
   message.value = full;
   stack.value = new ExpressionHandler(full);
-  console.log(stack.value);
 
 }
 </script>
@@ -22,11 +21,6 @@ const onInput = (char: string, full: string) => {
       <ConvertFiled :expression="stack.infix" title="Infix" />
       <ConvertFiled :expression="stack.postfix" title="Postfix" />
     </div>
-    <!-- <div class="container">
-      <Stack v-if="stack.prefix.type !== Type.None" :expression="stack.prefix" />
-      <Stack v-if="stack.infix.type !== Type.None" :expression="stack.infix" />
-      <Stack v-if="stack.postfix.type !== Type.None" :expression="stack.postfix" />
-    </div> -->
   </div>
 </template>
 
